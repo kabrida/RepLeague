@@ -9,6 +9,9 @@ import { db } from '../firebaseConfig';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AddWorkoutModal from './AddWorkoutModal';
+import ResultModal from './ResultModal';
+import { globalStyles } from '../styles/globalStyles';
+import { COLORS } from '../styles/theme';
 
 export default function HomeScreen() {
     const [workouts, setWorkouts] = useState([]);
@@ -17,6 +20,7 @@ export default function HomeScreen() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredWorkouts, setFilteredWorkouts] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
+    const [selectedWorkout, setSelectedWorkout] = useState(null);
 
     useEffect(() => {
 
@@ -120,18 +124,47 @@ export default function HomeScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
+        <View style={globalStyles.container}>
 
-            <Pressable style={styles.addButton} onPress={() => setModalVisible(true)}><Text style={styles.addButtonText}>Add New Workout</Text></Pressable>
+        <Text style={globalStyles.title}>Daily Workout:</Text>
+
+            {dailyWorkout ? (
+                <View style={globalStyles.item}>
+                    <Text style={globalStyles.workoutName}>{dailyWorkout.name}</Text>
+                    <Text style={globalStyles.workoutMode}>{dailyWorkout.mode}</Text>
+
+                    <View style={globalStyles.textContainer}>
+                    {dailyWorkout.exercises && dailyWorkout.exercises.map((ex, i) => (
+                        <Text key={i} style={globalStyles.exerciseText}>• {ex}</Text>
+                    ))}
+                    </View>
+
+                    <View style={globalStyles.textContainer}>
+                    {dailyWorkout.trainerTips && dailyWorkout.trainerTips.map((tip, i) => (
+                        <Text key={i} style={globalStyles.tipText}>- {tip}</Text>
+                    ))}
+
+                    <Pressable style={globalStyles.addButton} onPress={() => setSelectedWorkout(dailyWorkout)}>
+                        <Text style={globalStyles.addButtonText}>Add Result</Text>
+                    </Pressable>
+                    </View>
+
+                    </View>
+            ) : (<Text>No workout available</Text>
+            )}
+
+            <Pressable style={{...globalStyles.addButton, width: '100%'}} onPress={() => setModalVisible(true)}><Text style={globalStyles.addButtonText}>Add New Workout</Text></Pressable>
             <AddWorkoutModal 
                 visible={modalVisible} 
                 onClose={() => setModalVisible(false)} 
                 setWorkouts={setWorkouts}
                 />
 
-            <Text style={[styles.title, {marginTop: 40}]}>Search workout:</Text>
+            <Text style={[globalStyles.title, {marginTop: 40}]}>Search workout:</Text>
             <TextInput
+                style={globalStyles.input}
                 placeholder='Search workouts...'
+                placeholderTextColor={COLORS.placeholder}
                 value={searchTerm}
                 onChangeText={handleSearch}
                 />
@@ -139,52 +172,38 @@ export default function HomeScreen() {
 
         {filteredWorkouts.length > 0 && (
             <FlatList
-            contentContainerStyle={styles.listContainer}
+            contentContainerStyle={globalStyles.listContainer}
                 data={searchTerm.trim() === '' ? workouts : filteredWorkouts}
                 keyExtractor={(item, index) => `${item.id || item.name}-${index}`}
                 renderItem={({ item }) => (
-                    <View style={[styles.item, {marginTop: 10}]}>
-                        <Text style={styles.workoutName}>{item.name}</Text>
-                        <Text style={styles.workoutMode}>{item.mode}</Text>
+                    <View style={[globalStyles.item, {marginTop: 10}]}>
+                        <Text style={globalStyles.workoutName}>{item.name}</Text>
+                        <Text style={globalStyles.workoutMode}>{item.mode}</Text>
 
-                    <View style={styles.textContainer}>
+                    <View style={globalStyles.textContainer}>
                         {item.exercises && item.exercises.map((ex, i) => (
-                            <Text key={i} style={styles.exerciseText}>• {ex}</Text>
+                            <Text key={i} style={globalStyles.exerciseText}>• {ex}</Text>
                         ))}
                     </View>
 
-                    <View style={styles.textContainer}>
+                    <View style={globalStyles.textContainer}>
                         {item.trainerTips && item.trainerTips.map((tip, i) => (
-                            <Text key={i} style={styles.tipText}>- {tip}</Text>
+                            <Text key={i} style={globalStyles.tipText}>- {tip}</Text>
                         ))}
                     </View>
+                    <Pressable style={globalStyles.addButton} onPress={() => setSelectedWorkout(item)}>
+                        <Text style={globalStyles.addButtonText}>Add Result</Text>
+                    </Pressable>
                     </View>
                 )}
             />
         )}
 
-        <Text style={styles.title}>Daily Workout:</Text>
-
-            {dailyWorkout ? (
-                <View style={styles.item}>
-                    <Text style={styles.workoutName}>{dailyWorkout.name}</Text>
-                    <Text style={styles.workoutMode}>{dailyWorkout.mode}</Text>
-
-                    <View style={styles.textContainer}>
-                    {dailyWorkout.exercises && dailyWorkout.exercises.map((ex, i) => (
-                        <Text key={i} style={styles.exerciseText}>• {ex}</Text>
-                    ))}
-                    </View>
-
-                    <View style={styles.textContainer}>
-                    {dailyWorkout.trainerTips && dailyWorkout.trainerTips.map((tip, i) => (
-                        <Text key={i} style={styles.tipText}>- {tip}</Text>
-                    ))}
-                    </View>
-
-                    </View>
-            ) : (<Text>No workout available</Text>
-            )}
+        <ResultModal 
+            visible={!!selectedWorkout}
+            onClose={() => setSelectedWorkout(null)}
+            workout={selectedWorkout}
+        />
 
           </View>
           </TouchableWithoutFeedback>
@@ -192,80 +211,3 @@ export default function HomeScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        paddingTop: 60,
-        flexGrow: 1,
-        backgroundColor: '#ffffff',
-        alignItems: 'center',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    listContainer: {
-        paddingBottom: 100,
-        flexGrow: 1,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        marginTop: 80,
-        color: '#000000ff',
-    },
-    item: {
-        backgroundColor: '#f8f9fa',
-        padding: 12,
-        borderRadius: 8,
-        width: '100%',
-        minWidth: '100%',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-        marginVertical: 10,
-    },
-    workoutName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
-    workoutMode: {
-        fontSize: 16,
-        color: '#555',
-        marginBottom: 10,
-    },
-    exerciseText: {
-        fontSize: 14,
-        color: '#333',
-        marginBottom: 2,
-    },
-    tipText: {
-        fontSize: 12,
-        fontStyle: 'italic',
-        color: '#666',
-        marginBottom: 2,
-    },
-    textContainer: {
-        marginBottom: 20,
-    },
-    separator: {
-        height: 10,
-    },
-    addButton: {
-        backgroundColor: '#34e6ddff',
-        padding: 10,
-        borderRadius: 10,
-        alignItems: 'center',
-        marginTop: 20,
-    },
-    addButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-})

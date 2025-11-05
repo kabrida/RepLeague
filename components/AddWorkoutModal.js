@@ -2,6 +2,8 @@ import { collection, addDoc } from "firebase/firestore";
 import { useState } from "react";
 import { Alert, Modal, Pressable, TextInput, View, Text, StyleSheet, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { db } from "../firebaseConfig";
+import { globalStyles } from "../styles/globalStyles";
+import { COLORS } from "../styles/theme";
 
 
 export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
@@ -40,6 +42,30 @@ export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
 
     // Tallenna uusi treeni Firestoreen
     const handleSubmit = async () => {
+        const { name, mode, equipment, exercises, trainerTips } = newWorkout;
+
+        // Validointi ennen tallennusta
+        if(!name.trim()) {
+            Alert.alert('Validation Error', 'Workout name is required.');
+            return;
+        }
+
+        if(!mode.trim()) {
+            Alert.alert('Validation Error', 'Workout mode is required.');
+            return;
+        }
+
+        if(!exercises.some(ex => ex.trim() !== '')) {
+            Alert.alert('Validation Error', 'At least one exercise is required.');
+            return;
+        }
+
+        if(!trainerTips.some(tip => tip.trim() !== '')) {
+            Alert.alert('Validation Error', 'At least one trainer tip is required.');
+            return;
+        }
+
+
         try {
             const workoutsRef = collection(db, 'workouts');
             const workoutToSave = { ...newWorkout };
@@ -63,67 +89,77 @@ export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
         <Modal visible={visible} animationType="slide">
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <ScrollView contentContainerStyle={styles.container}>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>Add New Workout</Text>
+            <ScrollView contentContainerStyle={globalStyles.container}>
+                <Text style={globalStyles.title}>Add New Workout</Text>
 
                 <TextInput
                     placeholder="Workout Name"
+                    placeholderTextColor={COLORS.placeholder}
                     value={newWorkout.name}
                     onChangeText={(text) => handleChange('name', text)}
-                    style={styles.input}
+                    style={globalStyles.input}
                     />
 
                 <TextInput
                     placeholder="Workout Mode"
+                    placeholderTextColor={COLORS.placeholder}
                     value={newWorkout.mode}
                     onChangeText={(text) => handleChange('mode', text)}
-                    style={styles.input}
+                    style={globalStyles.input}
                     />
 
-                <Text>Equipment:</Text>
+                <Text style={COLORS.text}>Equipment:</Text>
                 {newWorkout.equipment.map((eq, i) => (
                     <View key={i}>
                         <TextInput
                             placeholder='Equipment'
+                            placeholderTextColor={COLORS.placeholder}
                             value={eq}
                             onChangeText={(text) => handleArrayChange('equipment', text, i)}
-                            style={styles.input}
+                            style={globalStyles.input}
                             />
-                            <Pressable style={styles.removeButton} onPress={() => removeArrayItem('equipment', i)}><Text>Remove</Text></Pressable>
+                            <Pressable style={globalStyles.cancelButton} onPress={() => removeArrayItem('equipment', i)}><Text>Remove</Text></Pressable>
                     </View>
                 ))}
-                <Pressable style={styles.addButton} onPress={() => addArrayItem('equipment')}><Text style={styles.addButtonText}> + Add Equipment</Text></Pressable>
+                <Pressable style={{...globalStyles.addButton, width: '100%'}} onPress={() => addArrayItem('equipment')}><Text style={globalStyles.addButtonText}> + Add Equipment</Text></Pressable>
 
-                <Text>Exercises:</Text>
+                <Text style={COLORS.text}>Exercises:</Text>
                 {newWorkout.exercises.map((ex, i) => (
                     <View key={i}>
                         <TextInput
                             placeholder='Exercise'
+                            placeholderTextColor={COLORS.placeholder}
                             value={ex}
                             onChangeText={(text) => handleArrayChange('exercises', text, i)}
-                            style={styles.input}
+                            style={globalStyles.input}
                             />
-                            <Pressable style={styles.removeButton} onPress={() => removeArrayItem('exercises', i)}><Text>Remove</Text></Pressable>
+                            <Pressable style={globalStyles.cancelButton} onPress={() => removeArrayItem('exercises', i)}><Text>Remove</Text></Pressable>
                     </View>
                 ))}
-                <Pressable style={styles.addButton} onPress={() => addArrayItem('exercises')}><Text style={styles.addButtonText}> + Add Exercise</Text></Pressable>
 
-                <Text>Trainer Tips:</Text>
+                <Pressable style={{...globalStyles.addButton, width: '100%'}} onPress={() => addArrayItem('exercises')}><Text style={globalStyles.addButtonText}> + Add Exercise</Text></Pressable>
+
+                <Text style={COLORS.text}>Trainer Tips:</Text>
                 {newWorkout.trainerTips.map((tip, i) => (
                     <View key={i}>
                         <TextInput
                             placeholder='Trainer Tip'
+                            placeholderTextColor={COLORS.placeholder}
                             value={tip}
                             onChangeText={(text) => handleArrayChange('trainerTips', text, i)}
-                            style={styles.input}
+                            style={globalStyles.input}
+                            multiline
+                            numberOfLines={4}
                             />
-                            <Pressable style={styles.removeButton} onPress={() => removeArrayItem('trainerTips', i)}><Text>Remove</Text></Pressable>
+                            <Pressable style={globalStyles.cancelButton} onPress={() => removeArrayItem('trainerTips', i)}><Text>Remove</Text></Pressable>
                     </View>
                 ))}
-                <Pressable style={styles.addButton} onPress={() => addArrayItem('trainerTips')}><Text style={styles.addButtonText}> + Add Trainer Tip</Text></Pressable>
+                <Pressable style={{...globalStyles.addButton, width: '100%'}} onPress={() => addArrayItem('trainerTips')}><Text style={globalStyles.addButtonText}> + Add Trainer Tip</Text></Pressable>
 
-                <Pressable style={styles.submitButton} onPress={handleSubmit}><Text>Submit</Text></Pressable>
-                <Pressable style={styles.closeButton} onPress={onClose}><Text>Close</Text></Pressable>
+                <View style={{...globalStyles.buttonContainer, marginTop: 30}}>
+                    <Pressable style={[globalStyles.cancelButton, globalStyles.button]} onPress={onClose}><Text style={globalStyles.buttonText}>Close</Text></Pressable>
+                    <Pressable style={[globalStyles.saveButton, globalStyles.button]} onPress={handleSubmit}><Text style={globalStyles.buttonText}>Submit</Text></Pressable>       
+                </View>
 
             </ScrollView>
         </TouchableWithoutFeedback>

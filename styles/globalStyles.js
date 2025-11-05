@@ -1,0 +1,137 @@
+import { StyleSheet } from "react-native";
+import { COLORS } from "./theme";
+
+export const globalStyles = StyleSheet.create({
+    container: {
+        padding: 20,
+        paddingTop: 60,
+        flexGrow: 1,
+        backgroundColor: COLORS.background,
+        alignItems: 'center',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    listContainer: {
+        paddingBottom: 100,
+        flexGrow: 1,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        marginTop: 80,
+        color: COLORS.text,
+    },
+    item: {
+        backgroundColor: COLORS.cardBackground,
+        padding: 12,
+        borderRadius: 8,
+        width: '100%',
+        minWidth: '100%',
+        shadowColor: '#797878ff',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+        marginVertical: 10,
+    },
+    workoutName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 4,
+        color: COLORS.text,
+    },
+    workoutMode: {
+        fontSize: 16,
+        color: '#555',
+        marginBottom: 10,
+        color: '#cececeff',
+    },
+    exerciseText: {
+        fontSize: 14,
+        color: '#ffffffff',
+        marginBottom: 2,
+    },
+    tipText: {
+        fontSize: 12,
+        fontStyle: 'italic',
+        color: '#c0c0c0ff',
+        marginBottom: 2,
+    },
+    textContainer: {
+        marginBottom: 20,
+    },
+    separator: {
+        height: 10,
+    },
+    addButton: {
+        backgroundColor: COLORS.accent,
+        padding: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    addButtonText: {
+        color: COLORS.text,
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    input: {
+        backgroundColor: COLORS.inputBackground,
+        borderColor: COLORS.border,
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 10,
+        color: COLORS.text,
+        marginBottom: 10,
+        width: '100%',
+        height: 50,
+    },
+    overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        width: '90%',
+        backgroundColor: COLORS.cardBackground,
+        borderRadius: 10,
+        padding: 20,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        textAlign: 'center',
+        color: COLORS.text,
+    },
+    button: {
+        flex: 1,
+        marginHorizontal: 5,
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    cancelButton: {
+        backgroundColor: '#ff5555ff',
+    },
+    saveButton: {
+      backgroundColor: '#00cc99ff',
+    },
+    closeButton: {
+        backgroundColor: 'gray',
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+
+})
