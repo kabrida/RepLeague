@@ -5,7 +5,7 @@ export const globalStyles = StyleSheet.create({
     container: {
         padding: 20,
         paddingTop: 60,
-        flexGrow: 1,
+        flex: 1,
         backgroundColor: COLORS.background,
         alignItems: 'center',
     },
@@ -16,7 +16,6 @@ export const globalStyles = StyleSheet.create({
     },
     listContainer: {
         paddingBottom: 100,
-        flexGrow: 1,
     },
     title: {
         fontSize: 24,
@@ -24,6 +23,7 @@ export const globalStyles = StyleSheet.create({
         marginBottom: 20,
         marginTop: 80,
         color: COLORS.text,
+        textAlign: 'center',
     },
     item: {
         backgroundColor: COLORS.cardBackground,
@@ -88,6 +88,7 @@ export const globalStyles = StyleSheet.create({
         color: COLORS.text,
         marginBottom: 10,
         width: '100%',
+        alignSelf: 'stretch',
         height: 50,
     },
     overlay: {

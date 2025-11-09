@@ -3,7 +3,7 @@
 // https://firebase.google.com/docs/firestore/quickstart
 
 import { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, FlatList, TextInput, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView, Pressable } from 'react-native';
+import { View, Text, ActivityIndicator, FlatList, TextInput, KeyboardAvoidingView, Platform, Keyboard, Pressable } from 'react-native';
 import wodApi from '../api/wodApi';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
@@ -21,6 +21,7 @@ export default function HomeScreen() {
     const [filteredWorkouts, setFilteredWorkouts] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedWorkout, setSelectedWorkout] = useState(null);
+    const [searchActive, setSearchActive] = useState(false);
 
     useEffect(() => {
 
@@ -118,17 +119,21 @@ export default function HomeScreen() {
     }
 
 
+    const isSearching = searchActive || searchTerm.trim() !== '';
+    const listData = filteredWorkouts;
+
     return (
     <KeyboardAvoidingView
             style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}           
         >
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <View>
         <View style={globalStyles.container}>
 
+        <Pressable onPress={Keyboard.dismiss} style={{width: '100%'}}>
         <Text style={globalStyles.title}>Daily Workout:</Text>
 
-            {dailyWorkout ? (
+            {!isSearching && dailyWorkout ? (
                 <View style={globalStyles.item}>
                     <Text style={globalStyles.workoutName}>{dailyWorkout.name}</Text>
                     <Text style={globalStyles.workoutMode}>{dailyWorkout.mode}</Text>
@@ -150,8 +155,12 @@ export default function HomeScreen() {
                     </View>
 
                     </View>
-            ) : (<Text>No workout available</Text>
-            )}
+            ) : isSearching && dailyWorkout ? (
+                // Piilotetaan päivän treeni, kun käyttäjä hakee jotain muuta
+                null
+            ) : (!dailyWorkout && !isSearching) ? (
+                <Text>No workout available</Text>
+            ) : null}
 
             <Pressable style={{...globalStyles.addButton, width: '100%'}} onPress={() => setModalVisible(true)}><Text style={globalStyles.addButtonText}>Add New Workout</Text></Pressable>
             <AddWorkoutModal 
@@ -167,14 +176,22 @@ export default function HomeScreen() {
                 placeholderTextColor={COLORS.placeholder}
                 value={searchTerm}
                 onChangeText={handleSearch}
+                onFocus={() => setSearchActive(true)}
+                onBlur={() => { if (searchTerm.trim() === '') setSearchActive(false); }}
                 />
+        </Pressable>
 
 
-        {filteredWorkouts.length > 0 && (
+    {isSearching && listData.length > 0 && (
+            <View style={{flex: 1, width: '100%'}}>
             <FlatList
-            contentContainerStyle={globalStyles.listContainer}
-                data={searchTerm.trim() === '' ? workouts : filteredWorkouts}
+            style={{flex: 1}}
+            contentContainerStyle={{paddingBottom: 100}}
+                data={listData}
                 keyExtractor={(item, index) => `${item.id || item.name}-${index}`}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+                nestedScrollEnabled={true}
                 renderItem={({ item }) => (
                     <View style={[globalStyles.item, {marginTop: 10}]}>
                         <Text style={globalStyles.workoutName}>{item.name}</Text>
@@ -197,6 +214,7 @@ export default function HomeScreen() {
                     </View>
                 )}
             />
+            </View>
         )}
 
         <ResultModal 
@@ -205,8 +223,8 @@ export default function HomeScreen() {
             workout={selectedWorkout}
         />
 
-          </View>
-          </TouchableWithoutFeedback>
+                    </View>
+                    </View>
         </KeyboardAvoidingView>
     );
 }

@@ -16,7 +16,7 @@ export default function ResultModal({ visible, onClose, workout }) {
 // For time -> aika
 // AMRAP/EMOM -> toistot
 // Voima -> painot
-// Muut -> yleinen ('COMPLETED)
+// Muut -> yleinen ('COMPLETED')
         if (!mode) return 'generic';
         const lowerMode = mode.toLowerCase();
         if (lowerMode.includes('for time')) return 'time';
@@ -33,16 +33,30 @@ export default function ResultModal({ visible, onClose, workout }) {
             return;
         }
     
-        const newResult = {
-            workoutId: workout.id,
-            date: new Date().toISOString(),
-            result: {
-                time: time || null,
-                reps: reps || null,
-                weight: weight || null,
-            },
-            notes: notes || '',
-        };
+        let newResult = {};
+
+        if (resultType === 'generic') {
+            // Jos tulostyyppi on yleinen, tallennetaan vain 'COMPLETED'
+            newResult = {
+                workoutId: workout.id,
+                date: new Date().toISOString(),
+                result: {
+                    status: 'COMPLETED',
+                },
+                notes: notes || '',
+                };
+        } else {
+            newResult = {
+                workoutId: workout.id,
+                date: new Date().toISOString(),
+                result: {
+                    time: time || null,
+                    reps: reps || null,
+                    weight: weight || null,
+                },
+                notes: notes || '',
+            };
+        }
 
         try {
             // Tallennetaan tulos Firestoreen
