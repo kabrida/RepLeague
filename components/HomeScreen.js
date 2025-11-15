@@ -35,7 +35,7 @@ export default function HomeScreen() {
                 if(!snapshot.empty) {
                     console.log('Workouts loaded from Firestore');
                     const existingWorkouts = snapshot.docs.map(doc => ({
-                        id: doc.id,
+                        firestoreId: doc.id,
                         ...doc.data(),
                     }));
                     setWorkouts(existingWorkouts);
@@ -46,13 +46,22 @@ export default function HomeScreen() {
                     const response = await wodApi.get('/workouts');
                     const fetchedWorkouts = response.data.data;
 
+                    const savedWorkouts = [];
+
                     // Tallennetaan haetut treenit Firestoreen
                     for (const workout of fetchedWorkouts) {
-                        await addDoc(workoutsRef, workout);
+                        const decRef = await addDoc(workoutsRef, {
+                            ...workout,
+                            externalId: workout.id, // Säilytetään alkuperäinen ID erillisenä kenttänä
+                        });
+                        savedWorkouts.push({
+                            firestoreId: decRef.id,
+                            ...workout,
+                        })
                     }
 
-                    setWorkouts(fetchedWorkouts);
-                    await chooseDailyWorkout(fetchedWorkouts);
+                    setWorkouts(savedWorkouts);
+                    await chooseDailyWorkout(savedWorkouts);
                     console.log('Workouts saved to Firestore');
                 }
         
@@ -111,9 +120,9 @@ export default function HomeScreen() {
 
     if (loading) {
         return (
-            <View>
+            <View style={globalStyles.loadingContainer}>
                 <ActivityIndicator size="large" color="#34b3e6ff" />
-                <Text>Loading workouts...</Text>
+                <Text style={globalStyles.loadingText}>Loading workouts...</Text>
             </View>
         )
     }

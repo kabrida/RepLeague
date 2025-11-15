@@ -60,6 +60,12 @@ export const globalStyles = StyleSheet.create({
         color: '#ffffffff',
         marginBottom: 2,
     },
+    scoreText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#a3ffffff',
+        marginBottom: 10,
+    },
     tipText: {
         fontSize: 12,
         fontStyle: 'italic',
@@ -146,6 +152,28 @@ export const globalStyles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         marginTop: 15,
-    }
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: COLORS.background,
+    },
+    loadingText: {
+        marginTop: 10,
+        color: COLORS.text,
+        fontSize: 16,
+    },
+    workoutDate: {
+        fontSize: 16,
+        color: '#555',
+        marginBottom: 10,
+        color: '#cececeff',
+    },
+    weightContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
 
 })

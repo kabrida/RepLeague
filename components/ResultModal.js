@@ -1,22 +1,33 @@
 import { addDoc, collection } from "firebase/firestore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { db } from "../firebaseConfig";
-import { Modal, Pressable, TextInput, View, Text } from "react-native";
+import { Modal, Pressable, TextInput, View, Text, Platform, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback } from "react-native";
 import { globalStyles } from '../styles/globalStyles';
 import { COLORS } from "../styles/theme";
+import { Picker } from "@react-native-picker/picker";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export default function ResultModal({ visible, onClose, workout }) {
     const [time, setTime] = useState('');
     const [reps, setReps] = useState('');
     const [weight, setWeight] = useState('');
     const [notes, setNotes] = useState('');
+    const [weightUnit, setWeightUnit] = useState('kg'); // Oletuksena kilot
+
+    useEffect(() => {
+        // Päivitetään inputit aina kun workout muuttuu
+        setTime('');
+        setReps('');
+        setWeight('');
+        setNotes('');
+    }, [workout]);
 
     const getResultType = (mode) => {
-// Liittyen treenin "mode"-kenttään, määritellään tulostyypit, jotka käyttäjä syöttää
-// For time -> aika
-// AMRAP/EMOM -> toistot
-// Voima -> painot
-// Muut -> yleinen ('COMPLETED')
+        // Liittyen treenin "mode"-kenttään, määritellään tulostyypit, jotka käyttäjä syöttää
+        // For time -> aika
+        // AMRAP/EMOM -> toistot
+        // Voima -> painot
+        // Muut -> yleinen ('COMPLETED')
         if (!mode) return 'generic';
         const lowerMode = mode.toLowerCase();
         if (lowerMode.includes('for time')) return 'time';
@@ -28,7 +39,8 @@ export default function ResultModal({ visible, onClose, workout }) {
     const resultType = getResultType(workout?.mode);
 
     const handleSave = async () => {
-        if (!workout.id) {
+        const workoutId = workout?.firestoreId || workout?.id;
+        if (!workoutId) {
             console.error('Workout ID is missing');
             return;
         }
@@ -48,31 +60,20 @@ export default function ResultModal({ visible, onClose, workout }) {
             alert('Please enter the weight for this workout.');
             return;
         }
-    
-        let newResult = {};
 
-        if (resultType === 'generic') {
-            // Jos tulostyyppi on yleinen, tallennetaan vain 'COMPLETED'
-            newResult = {
-                workoutId: workout.id,
-                date: new Date().toISOString(),
-                result: {
-                    status: 'COMPLETED',
-                },
-                notes: notes || '',
-                };
-        } else {
-            newResult = {
-                workoutId: workout.id,
-                date: new Date().toISOString(),
-                result: {
-                    time: time || null,
-                    reps: reps || null,
-                    weight: weight || null,
-                },
-                notes: notes || '',
-            };
-        }
+        // Luodaan tulosobjekti syötteiden perusteella
+        const newResult = {
+            workoutId,
+            date: new Date().toISOString(),
+            result: {
+                status: resultType === 'generic' ? 'COMPLETED' : null,
+                time: resultType === 'time' ? time.trim() : null,
+                reps: resultType === 'reps' ? parseInt(reps.trim()) : null,
+                weight: resultType === 'weight' ? parseFloat(weight.trim()) : null,
+                weightUnit: resultType === 'weight' ? weightUnit : null,
+            },
+            notes: notes.trim() || null,
+        };
 
         try {
             // Tallennetaan tulos Firestoreen
@@ -92,6 +93,14 @@ export default function ResultModal({ visible, onClose, workout }) {
 
     return (
         <Modal visible={visible} animationType="slide" transparent>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <KeyboardAwareScrollView
+                style={globalStyles.addWorkoutModalContainer}
+                contentContainerStyle={{ flexGrow: 1, padding: 20, alignItems: 'center' }}
+                keyboardShouldPersistTaps="handled"
+            >
+    
             <View style={globalStyles.overlay}>
                 <View style={globalStyles.modalContainer}>
                     <Text style={globalStyles.modalTitle}>Add Result for {workout?.name}</Text>
@@ -118,6 +127,7 @@ export default function ResultModal({ visible, onClose, workout }) {
                     )}
 
                     {resultType === 'weight' && (
+                        <View style={{ marginBottom: 10 }}>
                         <TextInput
                             style={globalStyles.input}
                             placeholder="Weight (e.g., 200)"
@@ -126,6 +136,18 @@ export default function ResultModal({ visible, onClose, workout }) {
                             onChangeText={setWeight}
                             keyboardType="numeric"
                         />
+                        <View style={{ ...globalStyles.input, paddingHorizontal: 0, justifyContent: 'center', overflow: 'hidden' }}>
+                            <Picker
+                                selectedValue={weightUnit}
+                                dropdownIconColor={COLORS.text}
+                                onValueChange={(itemValue) => setWeightUnit(itemValue)}
+                                mode={Platform.OS === 'ios' ? 'dialog' : 'dropdown'}
+                            >
+                                <Picker.Item label="kg" value="kg" />
+                                <Picker.Item label="lbs" value="lbs" />
+                            </Picker>
+                        </View>
+                        </View>
                     )}
 
                     <TextInput
@@ -148,6 +170,9 @@ export default function ResultModal({ visible, onClose, workout }) {
                     </View>
                 </View>
             </View>
+            </KeyboardAwareScrollView>
+            </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
         </Modal>
     )
 
