@@ -32,6 +32,22 @@ export default function ResultModal({ visible, onClose, workout }) {
             console.error('Workout ID is missing');
             return;
         }
+
+        // Validointi syötteelle: tulos on annettava riippuen tulostyypistä
+        if (resultType === 'time' && !time.trim()) {
+            alert('Please enter the time for this workout.');
+            return;
+        }
+
+        if (resultType === 'reps' && !reps.trim()) {
+            alert('Please enter the number of reps for this workout.');
+            return;
+        }
+        
+        if (resultType === 'weight' && !weight.trim()) {
+            alert('Please enter the weight for this workout.');
+            return;
+        }
     
         let newResult = {};
 

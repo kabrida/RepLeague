@@ -1,9 +1,14 @@
+// Lähteenä: https://docs.expo.dev/versions/latest/sdk/picker/
+// https://kirillzyusko.github.io/react-native-keyboard-controller/docs/api/components/keyboard-aware-scroll-view
+
 import { collection, addDoc } from "firebase/firestore";
 import { useState } from "react";
 import { Alert, Modal, Pressable, TextInput, View, Text, StyleSheet, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { db } from "../firebaseConfig";
 import { globalStyles } from "../styles/globalStyles";
 import { COLORS } from "../styles/theme";
+import { Picker } from "@react-native-picker/picker";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 
 export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
@@ -14,6 +19,17 @@ export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
         exercises: [],
         trainerTips: []
     });
+
+    // Tyhjentää lomakkeen kentät
+    const resetForm = () => {
+        setNewWorkout({
+            name: '',
+            mode: '',
+            equipment: [],
+            exercises: [],
+            trainerTips: []
+        });
+    }
 
     const handleChange = (key, value) => {
         setNewWorkout(prev => ({ ...prev, [key]: value }) );
@@ -68,7 +84,8 @@ export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
 
         try {
             const workoutsRef = collection(db, 'workouts');
-            const workoutToSave = { ...newWorkout };
+            const modeToSave = newWorkout.mode || 'GENERIC';
+            const workoutToSave = { ...newWorkout, mode: modeToSave };
 
             workoutToSave.equipment = workoutToSave.equipment.filter(e => e.trim() !== '');
             workoutToSave.exercises = workoutToSave.exercises.filter(e => e.trim() !== '');
@@ -78,6 +95,8 @@ export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
 
             setWorkouts(prev => [...prev, workoutToSave]);
             Alert.alert('Success', 'Workout added successfully!');
+
+            resetForm();
             onClose();
         } catch (error) {
             Alert.alert('Error', 'Failed to add workout. Please try again.');
@@ -87,9 +106,16 @@ export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
 
     return (
         <Modal visible={visible} animationType="slide">
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <KeyboardAvoidingView 
+            style={{ flex: 1 }} 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <ScrollView contentContainerStyle={globalStyles.container}>
+            <KeyboardAwareScrollView
+                style={globalStyles.addWorkoutModalContainer}
+                contentContainerStyle={{ flexGrow: 1, padding: 20, alignItems: 'center' }}
+                keyboardShouldPersistTaps="handled"
+            >
                 <Text style={globalStyles.title}>Add New Workout</Text>
 
                 <TextInput
@@ -100,15 +126,24 @@ export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
                     style={globalStyles.input}
                     />
 
-                <TextInput
-                    placeholder="Workout Mode"
-                    placeholderTextColor={COLORS.placeholder}
-                    value={newWorkout.mode}
-                    onChangeText={(text) => handleChange('mode', text)}
-                    style={globalStyles.input}
-                    />
+                <View style={{ ...globalStyles.input, paddingHorizontal: 0, justifyContent: 'center', overflow: 'hidden' }}>
+                    <Picker
+                        selectedValue={newWorkout.mode}
+                        onValueChange={(value) => handleChange('mode', value)}
+                        dropdownIconColor={COLORS.text}
+                        mode={Platform.OS === 'ios' ? 'dialog' : 'dropdown'}
+                        >
+                        <Picker.Item label="Select Mode" value="" color={COLORS.placeholder} />
+                        <Picker.Item label="AMRAP" value="AMRAP" color={COLORS.text} />
+                        <Picker.Item label="EMOM" value="EMOM" color={COLORS.text} />
+                        <Picker.Item label="For Time" value="FOR TIME" color={COLORS.text} />
+                        <Picker.Item label="Strength" value="STRENGTH" color={COLORS.text} />
+                        <Picker.Item label="Generic" value="GENERIC" color={COLORS.text} />
+                        </Picker>
 
-                <Text style={COLORS.text}>Equipment:</Text>
+                </View>
+
+                <Text style={globalStyles.sectionLabel}>Equipment:</Text>
                 {newWorkout.equipment.map((eq, i) => (
                     <View key={i}>
                         <TextInput
@@ -118,12 +153,13 @@ export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
                             onChangeText={(text) => handleArrayChange('equipment', text, i)}
                             style={globalStyles.input}
                             />
-                            <Pressable style={globalStyles.cancelButton} onPress={() => removeArrayItem('equipment', i)}><Text>Remove</Text></Pressable>
+                            <Pressable style={[globalStyles.cancelButton, globalStyles.button, { marginBottom: 15 }]} onPress={() => removeArrayItem('equipment', i)}><Text style={globalStyles.buttonText}>Remove</Text></Pressable>
                     </View>
                 ))}
+
                 <Pressable style={{...globalStyles.addButton, width: '100%'}} onPress={() => addArrayItem('equipment')}><Text style={globalStyles.addButtonText}> + Add Equipment</Text></Pressable>
 
-                <Text style={COLORS.text}>Exercises:</Text>
+                <Text style={globalStyles.sectionLabel}>Exercises:</Text>
                 {newWorkout.exercises.map((ex, i) => (
                     <View key={i}>
                         <TextInput
@@ -133,13 +169,13 @@ export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
                             onChangeText={(text) => handleArrayChange('exercises', text, i)}
                             style={globalStyles.input}
                             />
-                            <Pressable style={globalStyles.cancelButton} onPress={() => removeArrayItem('exercises', i)}><Text>Remove</Text></Pressable>
+                            <Pressable style={[globalStyles.cancelButton, globalStyles.button, { marginBottom: 15 }]} onPress={() => removeArrayItem('exercises', i)}><Text style={globalStyles.buttonText}>Remove</Text></Pressable>
                     </View>
                 ))}
 
                 <Pressable style={{...globalStyles.addButton, width: '100%'}} onPress={() => addArrayItem('exercises')}><Text style={globalStyles.addButtonText}> + Add Exercise</Text></Pressable>
 
-                <Text style={COLORS.text}>Trainer Tips:</Text>
+                <Text style={globalStyles.sectionLabel}>Trainer Tips:</Text>
                 {newWorkout.trainerTips.map((tip, i) => (
                     <View key={i}>
                         <TextInput
@@ -151,70 +187,19 @@ export default function AddWorkoutModal({ visible, onClose, setWorkouts }) {
                             multiline
                             numberOfLines={4}
                             />
-                            <Pressable style={globalStyles.cancelButton} onPress={() => removeArrayItem('trainerTips', i)}><Text>Remove</Text></Pressable>
+                            <Pressable style={[globalStyles.cancelButton, globalStyles.button, { marginBottom: 15 }]} onPress={() => removeArrayItem('trainerTips', i)}><Text style={globalStyles.buttonText}>Remove</Text></Pressable>
                     </View>
                 ))}
                 <Pressable style={{...globalStyles.addButton, width: '100%'}} onPress={() => addArrayItem('trainerTips')}><Text style={globalStyles.addButtonText}> + Add Trainer Tip</Text></Pressable>
 
                 <View style={{...globalStyles.buttonContainer, marginTop: 30}}>
-                    <Pressable style={[globalStyles.cancelButton, globalStyles.button]} onPress={onClose}><Text style={globalStyles.buttonText}>Close</Text></Pressable>
+                    <Pressable style={[globalStyles.cancelButton, globalStyles.button]} onPress={() => { resetForm(); onClose(); }}><Text style={globalStyles.buttonText}>Close</Text></Pressable>
                     <Pressable style={[globalStyles.saveButton, globalStyles.button]} onPress={handleSubmit}><Text style={globalStyles.buttonText}>Submit</Text></Pressable>       
                 </View>
 
-            </ScrollView>
+            </KeyboardAwareScrollView>
         </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
         </Modal>
     )
 }
-
-const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        paddingTop: 60,
-        flexGrow: 1,
-        backgroundColor: '#ffffff',
-        alignItems: 'center',
-    },
-    input: {
-        width: '100%',
-        minWidth: 400,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        padding: 10,
-        marginBottom: 10,
-        borderRadius: 5,
-    },
-    addButton: {
-        marginVertical: 10,
-        padding: 10,
-        borderWidth: 1,
-        borderColor: 'blue',
-        borderRadius: 5,
-        width: '100%',
-        alignItems: 'center',
-    },
-    removeButton: {
-        alignSelf: 'center',
-        marginVertical: 5,
-        padding: 5,
-        backgroundColor: 'red',
-        borderRadius: 5,
-    },
-    submitButton: {
-        marginTop: 20,
-        padding: 15,
-        backgroundColor: 'green',
-        borderRadius: 5,
-        width: '100%',
-        alignItems: 'center',
-    },
-    closeButton: {
-        marginTop: 10,
-        padding: 15,
-        backgroundColor: 'gray',
-        borderRadius: 5,
-        width: '100%',
-        alignItems: 'center',
-    },
-});

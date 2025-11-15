@@ -9,6 +9,11 @@ export const globalStyles = StyleSheet.create({
         backgroundColor: COLORS.background,
         alignItems: 'center',
     },
+    addWorkoutModalContainer: {
+        flex: 1,
+        backgroundColor: COLORS.background,
+        paddingTop: 60,
+    },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -90,6 +95,7 @@ export const globalStyles = StyleSheet.create({
         width: '100%',
         alignSelf: 'stretch',
         height: 50,
+        minWidth: '100%',
     },
     overlay: {
         flex: 1,
@@ -116,6 +122,7 @@ export const globalStyles = StyleSheet.create({
         padding: 10,
         borderRadius: 8,
         alignItems: 'center',
+        maxHeight: 40,
     },
     buttonText: {
         color: '#fff',
@@ -134,5 +141,11 @@ export const globalStyles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
+    sectionLabel: {
+        color: COLORS.text,
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginTop: 15,
+    }
 
 })

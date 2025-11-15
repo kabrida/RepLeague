@@ -125,9 +125,8 @@ export default function HomeScreen() {
     return (
     <KeyboardAvoidingView
             style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}           
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}  
         >
-    <View>
         <View style={globalStyles.container}>
 
         <Pressable onPress={Keyboard.dismiss} style={{width: '100%'}}>
@@ -223,7 +222,6 @@ export default function HomeScreen() {
             workout={selectedWorkout}
         />
 
-                    </View>
                     </View>
         </KeyboardAvoidingView>
     );
