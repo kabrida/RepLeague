@@ -194,5 +194,32 @@ export const globalStyles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 10,
     },
+    calendarTheme: {
+        backgroundColor: COLORS.background,
+        calendarBackground: COLORS.background,
+        textSectionTitleColor: COLORS.text,
+        dayTextColor: COLORS.text,
+        todayTextColor: COLORS.accent,
+        selectedDayBackgroundColor: COLORS.accent,
+        selectedDayTextColor: COLORS.background,
+        dotColor: COLORS.accent,
+        arrowColor: COLORS.accent,
+        monthTextColor: COLORS.text,
+        textMonthFontWeight: 'bold',
+        textDisabledColor: '#555555',
+        indicatorColor: COLORS.accent,
+    },
+    instructionText: {
+        fontSize: 14,
+        color: '#cccccc',
+        textAlign: 'center',
+        marginHorizontal: 20,
+    },
+    notFoundText: {
+        fontSize: 16,
+        color: COLORS.text,
+        textAlign: 'center',
+        marginTop: 20,
+    },
 
 })

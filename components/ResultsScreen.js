@@ -107,7 +107,7 @@ export default function ResultsScreen() {
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 style={globalStyles.searchResultInput}
-                placeholderTextColor={globalStyles.placeholderTextColor}
+                placeholderTextColor={COLORS.placeholder}
             />
             <TouchableOpacity onPress={() => setSortNewestFirst(prev => !prev)} style={{ marginLeft: 10, flexDirection: 'row', alignItems: 'center' }}>
                 <Ionicons
