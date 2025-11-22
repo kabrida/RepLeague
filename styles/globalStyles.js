@@ -7,7 +7,7 @@ export const globalStyles = StyleSheet.create({
         paddingTop: 60,
         flex: 1,
         backgroundColor: COLORS.background,
-        alignItems: 'center',
+      //  alignItems: 'center',
     },
     addWorkoutModalContainer: {
         flex: 1,
@@ -103,6 +103,19 @@ export const globalStyles = StyleSheet.create({
         height: 50,
         minWidth: '100%',
     },
+    searchResultInput: {
+        backgroundColor: COLORS.inputBackground,
+        borderColor: COLORS.border,
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 10,
+        color: COLORS.text,
+        marginBottom: 10,
+        width: '80%',
+        alignSelf: 'stretch',
+        height: 50,
+        minWidth: '80%',
+    },
     overlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -139,6 +152,12 @@ export const globalStyles = StyleSheet.create({
     },
     saveButton: {
       backgroundColor: '#00cc99ff',
+    },
+    editButton: {   
+        backgroundColor: COLORS.accent,
+    },
+    deleteButton: {
+        backgroundColor: '#ff5555c0',
     },
     closeButton: {
         backgroundColor: 'gray',
