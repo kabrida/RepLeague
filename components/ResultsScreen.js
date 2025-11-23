@@ -22,11 +22,16 @@ export default function ResultsScreen() {
 
             // Haetaan tulokseen liittyvän treenin nimi
             let workoutName = 'Workout';
+            let workoutMode = '';
+            let exercises = [];
+
             if(result.workoutId) {
                 try {
                     const workoutSnap = await getDoc(doc(db, 'workouts', result.workoutId));
                     if (workoutSnap.exists()) {
                         workoutName = workoutSnap.data().name;
+                        workoutMode = workoutSnap.data().mode;
+                        exercises = workoutSnap.data().exercises || [];
                     }
                 } catch(e) {
                     console.warn('Workout not found with ID', result.workoutId);
@@ -41,7 +46,9 @@ export default function ResultsScreen() {
                 time: result.result?.time,
                 weight: result.result?.weight,
                 weightUnit: result.result?.weightUnit,
-                workoutName
+                workoutName,
+                workoutMode,
+                exercises,
             };
             }));
             console.log('Fetched results with workout names:', data);
@@ -129,6 +136,12 @@ export default function ResultsScreen() {
                     <View style={globalStyles.item}>
                        <Text style={globalStyles.workoutName}>{item.workoutName}</Text>
                        <Text style={globalStyles.workoutDate}>Date: {new Date(item.date).toLocaleDateString('fi-FI')}</Text>
+                       <Text style={globalStyles.workoutMode}>{item.workoutMode}</Text>
+                       <View style={globalStyles.textContainer}>
+                        {item.exercises && item.exercises.map((ex, i) => (
+                            <Text key={i} style={globalStyles.exerciseText}>• {ex}</Text>
+                        ))}
+                        </View>
                        {item.reps !== null && <Text style={globalStyles.scoreText}>Reps: {item.reps}</Text>}
                        {item.time !== null && <Text style={globalStyles.scoreText}>Time: {item.time}</Text>}
                        {item.weight !== null && <Text style={globalStyles.scoreText}>Weight: {item.weight} {item.weightUnit}</Text>}

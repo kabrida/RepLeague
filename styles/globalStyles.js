@@ -26,7 +26,7 @@ export const globalStyles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
-        marginTop: 80,
+        marginTop: 50,
         color: COLORS.text,
         textAlign: 'center',
     },
@@ -61,8 +61,8 @@ export const globalStyles = StyleSheet.create({
         marginBottom: 2,
     },
     scoreText: {
-        fontSize: 14,
-        fontWeight: 'bold',
+        fontSize: 17,
+        fontWeight: 'bold',     
         color: '#a3ffffff',
         marginBottom: 10,
     },
@@ -221,5 +221,20 @@ export const globalStyles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 20,
     },
+    calendarInfo: {
+        marginTop: 20, 
+        padding: 15, 
+        borderRadius: 10, 
+        borderWidth: 1,
+        borderColor: COLORS.border, 
+        backgroundColor: COLORS.backgroundLight
+    },
+    calendarInfoText: {
+        fontSize: 16,
+        color: COLORS.text,
+        textAlign: 'center',
+        marginTop: 5,
+        marginBottom: 5,
+    }
 
 })

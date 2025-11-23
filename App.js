@@ -6,6 +6,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import ResultsScreen from './components/ResultsScreen';
 import CalendarScreen from './components/CalendarScreen';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { COLORS } from './styles/theme';
 
 const Tab = createBottomTabNavigator();
 
@@ -16,7 +17,7 @@ export default function App() {
         screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle: { backgroundColor: '#222222' },
-          tabBarActiveTintColor: '#ffffff',
+          tabBarActiveTintColor: COLORS.accent,
           tabBarInactiveTintColor: '#888888',
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;

@@ -38,6 +38,12 @@ export default function CalendarResultsModal({ visible, onClose, results, date, 
                     <View style={globalStyles.item}>
                         <Text style={globalStyles.workoutName}>{item.workoutName}</Text>
                         <Text style={globalStyles.workoutDate}>Date: {new Date(item.date).toLocaleDateString('fi-FI')}</Text>
+                        <Text style={globalStyles.workoutMode}>{item.workoutMode}</Text>
+                        <View style={globalStyles.textContainer}>
+                        {item.exercises && item.exercises.map((ex, i) => (
+                            <Text key={i} style={globalStyles.exerciseText}>• {ex}</Text>
+                        ))}
+                        </View>
                         {item.reps !== null && <Text style={globalStyles.scoreText}>Reps: {item.reps}</Text>}
                         {item.time !== null && <Text style={globalStyles.scoreText}>Time: {item.time}</Text>}
                         {item.weight !== null && <Text style={globalStyles.scoreText}>Weight: {item.weight} {item.weightUnit}</Text>}

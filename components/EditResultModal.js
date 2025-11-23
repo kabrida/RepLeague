@@ -75,6 +75,8 @@ export default function EditResultModal({ visible, onClose, result }) {
                     weightUnit: updatedData.result.weightUnit,
                     notes: updatedData.notes,
                     workoutName: result.workoutName ?? result.workoutName,
+                    workoutMode: result.workoutMode ?? null,
+                    workoutId: result.workoutId ?? null,
                 };
                 onClose(updatedResult);
             } catch (e) {

@@ -1,13 +1,14 @@
 // Lähteenä: https://github.com/wix/react-native-calendars
 // https://devdocs.io/date_fns/
+// https://www.geeksforgeeks.org/reactjs/react-js-usememo-hook/
 
 import { ActivityIndicator, Text, View } from 'react-native';
 import { collection, deleteDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { globalStyles } from '../styles/globalStyles';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { COLORS } from '../styles/theme';
-import { format } from 'date-fns';
+import { format, isWithinInterval, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { Calendar } from 'react-native-calendars';
 import CalendarResultsModal from './CalendarResultsModal';
 import EditResultModal from './EditResultModal';
@@ -21,24 +22,36 @@ export default function CalendarScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedResult, setSelectedResult] = useState(null);
 
+    // Aikamuuttujat
+    const today = new Date();
+    const currentMonthStart = startOfMonth(today);
+    const currentMonthEnd = endOfMonth(today);
+    const previousMonthStart = startOfMonth(subMonths(today, 1));
+    const previousMonthEnd = endOfMonth(subMonths(today, 1));
+
     useEffect(() => {
         // Haetaan tulokset Firebasesta reaaliajassa
         const unsubscribe = onSnapshot(collection(db, 'results'), async (snapshot) => {
             const fetcehedResults = await Promise.all(snapshot.docs.map(async docSnap => {
                 const result = docSnap.data();
 
-                // Haetaan treenin nimi workoutId:n perusteella
+                // Haetaan treenin nimi ja mode workoutId:n perusteella
                 let workoutName = 'Workout';
+                let workoutMode = null;
+                let exercises = [];
                 if(result.workoutId) {
                     try {
                         const workoutSnap = await getDoc(doc(db, 'workouts', result.workoutId));
                         if (workoutSnap.exists()) {
-                            workoutName = workoutSnap.data().name;
+                            const w = workoutSnap.data();
+                            workoutName = w.name ?? workoutName;
+                            workoutMode = w.mode ?? null;
+                            exercises = w.exercises || [];
                         }
                     } catch(e) {
-                    console.warn('Workout not found with ID', result.workoutId);
+                        console.warn('Workout not found with ID', result.workoutId);
+                    }
                 }
-            }
 
                 return {
                     id: docSnap.id,
@@ -48,7 +61,9 @@ export default function CalendarScreen() {
                     weight: result.result?.weight,
                     weightUnit: result.result?.weightUnit,
                     notes: result.notes,
-                    workoutName
+                    workoutName,
+                    workoutMode,
+                    exercises,
                 };
             })
         );
@@ -58,6 +73,26 @@ export default function CalendarScreen() {
         });
         return () => unsubscribe();
     }, []);
+
+    // Laskee kuukauden yleisimmän treenityypin (mode) nykyisestä results-tilasta
+    const mostCommonModeThisMonth = useMemo(() => {
+        if (!results || results.length === 0) return null;
+
+        const freq = {};
+        results.forEach(r => {
+            if (!r.workoutMode) return;
+            const d = new Date(r.date);
+            // Käytetään date-fns:in isWithinInterval ja laskettuja month-start/end arvoja
+            if (isWithinInterval(d, { start: currentMonthStart, end: currentMonthEnd })) {
+                freq[r.workoutMode] = (freq[r.workoutMode] || 0) + 1;
+            }
+        });
+
+        const entries = Object.entries(freq);
+        if (entries.length === 0) return null;
+        entries.sort((a, b) => b[1] - a[1]);
+        return entries[0][0];
+    }, [results, currentMonthStart, currentMonthEnd]);
 
     useEffect(() => {
         // Merkitään kalenteriin päivät, joille on tallennettu tuloksia
@@ -121,6 +156,21 @@ export default function CalendarScreen() {
         }, 250);
     }
 
+    // Tulokset (results) kuluvalta kuukaudelta
+    const currentMonthResults = results.filter(result =>
+        isWithinInterval(new Date(result.date), { start: currentMonthStart, end: currentMonthEnd })
+    )
+
+    // Tulokset (results) edelliseltä kuukaudelta
+    const previousMonthResults = results.filter(result =>
+        isWithinInterval(new Date(result.date), { start: previousMonthStart, end: previousMonthEnd })
+    )
+
+    // Kuinka monta kertaa on treenattu kuukaudessa
+    const currentMonthWorkoutCount = currentMonthResults.length;
+    const previousMonthWorkoutCount = previousMonthResults.length;
+    const difference = currentMonthWorkoutCount - previousMonthWorkoutCount;
+
     if (loading) {
         return (
             <View style={globalStyles.loadingContainer}>
@@ -129,7 +179,6 @@ export default function CalendarScreen() {
             </View>
         )
     }
-
 
     return (
         <View style={globalStyles.container}>
@@ -156,8 +205,35 @@ export default function CalendarScreen() {
         />
 
         <Text style={globalStyles.instructionText}>Days with a dot indicate that you have recorded at least one workout. Tap a day to see details.</Text>
+        
+        <View style={globalStyles.calendarInfo}>
+            <Text style={globalStyles.calendarInfoText}>
+                You have worked out {currentMonthWorkoutCount} times this month, 
+                {difference > 0
+                    ? ` which is ${difference} times more than last month.`
+                    : difference < 0
+                        ? ` which is ${Math.abs(difference)} times less than last month.`
+                        : ` which is the same as last month.`}
+            </Text>
+        </View>
 
 
+        {mostCommonModeThisMonth ? (
+            <View style={globalStyles.calendarInfo}>
+            <Text style={globalStyles.calendarInfoText}>
+                Most common workout type this month: {mostCommonModeThisMonth}
+            </Text>
+            </View>
+        ) : (
+            <View style={globalStyles.calendarInfo}>
+            <Text style={globalStyles.calendarInfoText}>
+                No workout type data for this month.
+            </Text>
+            </View>
+        )}
+
+
+        
         {modalVisible && (
         <CalendarResultsModal 
             visible={modalVisible}
@@ -168,6 +244,8 @@ export default function CalendarScreen() {
             onEdit={handleEditResult}
         />
         )}
+
+
 
         {selectedResult && (
             <EditResultModal

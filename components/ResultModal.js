@@ -27,7 +27,7 @@ export default function ResultModal({ visible, onClose, workout }) {
         // For time -> aika
         // AMRAP/EMOM -> toistot
         // Voima -> painot
-        // Muut -> yleinen ('COMPLETED')
+        // Muut -> yleinen
         if (!mode) return 'generic';
         const lowerMode = mode.toLowerCase();
         if (lowerMode.includes('for time')) return 'time';
