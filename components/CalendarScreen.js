@@ -2,7 +2,7 @@
 // https://devdocs.io/date_fns/
 
 import { ActivityIndicator, Text, View } from 'react-native';
-import { collection, doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { globalStyles } from '../styles/globalStyles';
 import { useEffect, useState } from 'react';
@@ -10,6 +10,7 @@ import { COLORS } from '../styles/theme';
 import { format } from 'date-fns';
 import { Calendar } from 'react-native-calendars';
 import CalendarResultsModal from './CalendarResultsModal';
+import EditResultModal from './EditResultModal';
 
 export default function CalendarScreen() {
     const [results, setResults] = useState([]);
@@ -18,6 +19,7 @@ export default function CalendarScreen() {
     const [selectedDate, setSelectedDate] = useState(null);
     const [dayResults, setDayResults] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
+    const [selectedResult, setSelectedResult] = useState(null);
 
     useEffect(() => {
         // Haetaan tulokset Firebasesta reaaliajassa
@@ -67,6 +69,58 @@ export default function CalendarScreen() {
         setMarkedDates(marks);
     }, [results]);
 
+    const handleDeleteResult = async (resultId) => {
+        try {
+            await deleteDoc(doc(db, 'results', resultId));
+            console.log('Result deleted with ID:', resultId);
+            setResults(prevResults => prevResults.filter(result => result.id !== resultId));
+        } catch (e) {
+            console.error('Error deleting result:', e);
+        }
+    }
+
+    const handleEditResult = (result) => {
+        // Suljetaan ensin tulosmodaali, sitten avataan muokkausmodaali valitulla tuloksella,
+        // jotta vältytään modaalien päällekkäisyydeltä ja virheiltä
+        setModalVisible(false);
+        setTimeout(() => {
+            setSelectedResult(result);
+        }, 250);
+    }
+
+    const handleCloseEditModal = (updatedResult) => {
+        // Sulje edit-modali
+        setSelectedResult(null);
+
+        // Jos EditResultModal palautti päivitetyn tuloksen, päivitetään paikallinen results-tila
+        if (updatedResult) {
+            setResults(prev => prev.map(r => r.id === updatedResult.id ? updatedResult : r));
+            // Päivitä dayResults heti käyttämällä uutena tiedoista koostettua versiota
+            if (selectedDate && format(new Date(updatedResult.date), 'yyyy-MM-dd') === selectedDate) {
+                // Korvataan tai lisätään päivitetty tulos dayResultsiin
+                setDayResults(prevDay => {
+                    const exists = prevDay.some(d => d.id === updatedResult.id);
+                    if (exists) {
+                        return prevDay.map(d => d.id === updatedResult.id ? updatedResult : d);
+                    }
+                    return [...prevDay, updatedResult];
+                });
+            }
+        }
+
+        // Avaa takaisin päivän tulokset pienen viiveen jälkeen, jotta modaalit eivät mene päällekkäin
+        setTimeout(() => {
+            // Jos päivitetystä tuloksesta ei lähetetty suoraan, niin haetaan dayResults results-tilasta
+            if (!updatedResult && selectedDate) {
+                const refreshed = results
+                    .filter(r => format(new Date(r.date), 'yyyy-MM-dd') === selectedDate)
+                    .map((result, index) => ({ id: result.id || index.toString(), ...result }));
+                setDayResults(refreshed);
+            }
+            setModalVisible(true);
+        }, 250);
+    }
+
     if (loading) {
         return (
             <View style={globalStyles.loadingContainer}>
@@ -110,7 +164,18 @@ export default function CalendarScreen() {
             onClose={() => setModalVisible(false)}
             results={dayResults}
             date={selectedDate}
+            onDelete={handleDeleteResult}
+            onEdit={handleEditResult}
         />
+        )}
+
+        {selectedResult && (
+            <EditResultModal
+                visible={!!selectedResult}
+                onClose={handleCloseEditModal}
+                result={selectedResult}
+                isEdit={true}
+            />
         )}
         </View>
     );

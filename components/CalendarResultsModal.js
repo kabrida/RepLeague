@@ -8,14 +8,17 @@ export default function CalendarResultsModal({ visible, onClose, results, date, 
             "Are you sure you want to remove this result?",
             [
                 { text: "Cancel", style: "cancel" },
-                { text: "Delete", style: "destructive", onPress: () => onDelete(resultId) }
+                { text: "Remove", style: "destructive", onPress: () => {
+                    onDelete(resultId); 
+                    onClose();
+                }}
             ]
         );
     };
 
 
     return (
-        <Modal visible={visible} animationType="slide" transparent>
+        <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
         <View style={globalStyles.overlay}>
         <View style={[globalStyles.modalContainer, {maxHeight: '80%'}]}>
             <Text style={globalStyles.modalTitle}>Results for {new Date(date).toLocaleDateString('fi-FI')}</Text>
@@ -26,6 +29,11 @@ export default function CalendarResultsModal({ visible, onClose, results, date, 
             <FlatList 
                 data={results}
                 keyExtractor={(item, index) => item.id || index.toString()}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+                contentContainerStyle={{ paddingBottom: 30 }}
+                ListFooterComponent={() => <View style={{ height: 30 }} />}
                 renderItem={({ item }) => (
                     <View style={globalStyles.item}>
                         <Text style={globalStyles.workoutName}>{item.workoutName}</Text>
@@ -38,7 +46,7 @@ export default function CalendarResultsModal({ visible, onClose, results, date, 
                         <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: 10}}>
                             <Pressable
                                 style={[globalStyles.button, globalStyles.editButton]}
-                                onPress={() => onEdit(item.id)}
+                                onPress={() => onEdit(item)}
                             >
                                 <Text style={globalStyles.buttonText}>Edit</Text>
                             </Pressable>
@@ -46,11 +54,11 @@ export default function CalendarResultsModal({ visible, onClose, results, date, 
                                 style={[globalStyles.button, globalStyles.deleteButton]}
                                 onPress={() => handleDelete(item.id)}
                             >
-                                <Text style={globalStyles.buttonText}>Delete</Text>
+                                <Text style={globalStyles.buttonText}>Remove</Text>
                             </Pressable>
                         </View> 
                     </View>
-                )} 
+                    )} 
                     />
         )}
 

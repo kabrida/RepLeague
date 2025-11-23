@@ -65,7 +65,18 @@ export default function EditResultModal({ visible, onClose, result }) {
                 console.log("Document ref test:", doc(db, 'results', result.id));
                 await updateDoc(doc(db, 'results', result.id), updatedData);
                 console.log('Result updated successfully');
-                onClose();
+                // Rakenna päivitetty tulosobjekti palautettavaksi parent-komponentille
+                const updatedResult = {
+                    id: result.id,
+                    date: updatedData.date,
+                    reps: updatedData.result.reps,
+                    time: updatedData.result.time,
+                    weight: updatedData.result.weight,
+                    weightUnit: updatedData.result.weightUnit,
+                    notes: updatedData.notes,
+                    workoutName: result.workoutName ?? result.workoutName,
+                };
+                onClose(updatedResult);
             } catch (e) {
                 console.error('Error updating result: ', e);
                 alert('Error updating result');
@@ -142,7 +153,7 @@ export default function EditResultModal({ visible, onClose, result }) {
                             />
 
                             <View style={globalStyles.buttonContainer}>
-                                <Pressable style={[globalStyles.button, globalStyles.cancelButton]} onPress={onClose}>
+                                <Pressable style={[globalStyles.button, globalStyles.cancelButton]} onPress={() => onClose()}>
                                     <Text style={globalStyles.buttonText}>Cancel</Text>
                                 </Pressable>
                                 <Pressable style={[globalStyles.button, globalStyles.saveButton]} onPress={handleUpdate}>

@@ -120,7 +120,11 @@ export default function ResultsScreen() {
             <FlatList
                 data={sortedResults}
                 keyExtractor={(item, index) => item.id || index.toString()}
-                contentContainerStyle={globalStyles.listContainer}
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled={true}
+                showsVerticalScrollIndicator={true}
+                contentContainerStyle={[globalStyles.listContainer, { paddingBottom: 120 }]}
+                ListFooterComponent={() => <View style={{ height: 90 }} />}
                 renderItem={({ item }) => (
                     <View style={globalStyles.item}>
                        <Text style={globalStyles.workoutName}>{item.workoutName}</Text>
