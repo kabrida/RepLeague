@@ -51,7 +51,6 @@ export default function ResultsScreen() {
                 exercises,
             };
             }));
-            console.log('Fetched results with workout names:', data);
             setResults(data);
             setLoading(false);
         });

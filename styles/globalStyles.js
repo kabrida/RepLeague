@@ -201,10 +201,10 @@ export const globalStyles = StyleSheet.create({
         dayTextColor: COLORS.text,
         todayTextColor: COLORS.accent,
         selectedDayBackgroundColor: COLORS.accent,
-        selectedDayTextColor: COLORS.background,
+        selectedDayTextColor: COLORS.backgroundLight,
         dotColor: COLORS.accent,
         arrowColor: COLORS.accent,
-        monthTextColor: COLORS.text,
+        monthTextColor: COLORS.accent,
         textMonthFontWeight: 'bold',
         textDisabledColor: '#555555',
         indicatorColor: COLORS.accent,
@@ -235,6 +235,27 @@ export const globalStyles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 5,
         marginBottom: 5,
+    },
+    errorText: {
+        color: '#ff5555ff',
+        fontSize: 14,
+        textAlign: 'center',
+        marginTop: 10,
+        marginBottom: 5,
+
+    },
+    link: { 
+        color: COLORS.accent, 
+        marginTop: 20,
+        marginLeft: 1,
+        fontStyle: 'italic',
+        fontWeight: 'bold',
+    },
+
+    italicText: {
+        fontStyle: 'italic',
+        color: COLORS.text,
+        marginTop: 20,
     }
 
 })
