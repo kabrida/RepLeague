@@ -51,7 +51,7 @@ export default function EditResultModal({ visible, onClose, result }) {
             }
 
             try {
-                    // Guard: ensure we still have the result prop before proceeding
+                
                     if (!result) {
                         alert('No result selected to update. Please reopen the editor.');
                         return;
