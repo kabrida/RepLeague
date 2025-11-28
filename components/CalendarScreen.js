@@ -3,15 +3,16 @@
 // https://www.geeksforgeeks.org/reactjs/react-js-usememo-hook/
 
 import { ActivityIndicator, Text, View } from 'react-native';
-import { collection, deleteDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { globalStyles } from '../styles/globalStyles';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useContext } from 'react';
 import { COLORS } from '../styles/theme';
 import { format, isWithinInterval, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { Calendar } from 'react-native-calendars';
 import CalendarResultsModal from './CalendarResultsModal';
 import EditResultModal from './EditResultModal';
+import { AuthContext } from '../authentication/AuthContext';
 
 export default function CalendarScreen() {
     const [results, setResults] = useState([]);
@@ -21,6 +22,7 @@ export default function CalendarScreen() {
     const [dayResults, setDayResults] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedResult, setSelectedResult] = useState(null);
+    const { user } = useContext(AuthContext);
 
     // Aikamuuttujat
     const today = new Date();
@@ -30,8 +32,14 @@ export default function CalendarScreen() {
     const previousMonthEnd = endOfMonth(subMonths(today, 1));
 
     useEffect(() => {
+        // Haetaan vain kirjautuneen käyttäjän tulokset kalenteriin
+        if (!user) return;
+
+        const resultsRef = collection(db, 'results');
+        const q = query(resultsRef, where('userId', '==', user.uid));
+        
         // Haetaan tulokset Firebasesta reaaliajassa
-        const unsubscribe = onSnapshot(collection(db, 'results'), async (snapshot) => {
+        const unsubscribe = onSnapshot(q, async (snapshot) => {
             const fetcehedResults = await Promise.all(snapshot.docs.map(async docSnap => {
                 const result = docSnap.data();
 
@@ -182,7 +190,6 @@ export default function CalendarScreen() {
 
     return (
         <View style={globalStyles.container}>
-            <Text style={globalStyles.title}>Workout Calendar</Text>
         <Calendar
             // Kuukauden vaihtaminen automaattisesti
             markingType={'simple'}

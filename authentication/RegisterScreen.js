@@ -1,4 +1,5 @@
 // https://github.com/react-native-datetimepicker/datetimepicker
+// https://firebase.google.com/docs/auth/admin/errors
 
 import { useContext, useState } from "react";
 import { AuthContext } from "./AuthContext";
@@ -6,8 +7,6 @@ import { Modal, Platform, Pressable, Text, TextInput, View, Image } from "react-
 import { globalStyles } from "../styles/globalStyles";
 import { COLORS } from "../styles/theme";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "../firebaseConfig";
 
 export default function RegisterScreen({ navigation }) {
     const { register } = useContext(AuthContext);
@@ -36,45 +35,26 @@ export default function RegisterScreen({ navigation }) {
             return;
         }
 
-        if (password.length < 6) {
-            setError('Password must be at least 6 characters long.');
-            return;
-        }
-
-        // Tarkastetaan, ettei collectioniin 'users' ole jo samaa sähköpostiosoitetta
-        if (!email.includes('@')) {
-            setError('Please enter a valid email address.');
-            return;
-        }
-
-
 
         try {
-            // Luodaan käyttäjä Firebase Authiin
-            const userCredential = await register(email, password);
-            const user = userCredential.user;
-
-            // Luodaan käyttäjäprofiili Firestoren collectioniin 'users'
-            await addDoc(collection(db, 'users'), {
-                uid: user.uid,
-                firstName: firstName,
-                lastName: lastName,
-                birthDate: birthDate.toISOString(),
-                email: email,
-                createdAt: new Date().toISOString(),
-            });
-
-            console.log('User registered and profile created successfully');
+            // Luodaan käyttäjä Firebase Authiin ja profiili AuthContextin register-funktiolla
+            const userCredential = await register(email, password, firstName, lastName, birthDate);
+            console.log('User registered and profile created successfully', userCredential.user.uid);
             navigation.navigate("Login"); // Ohjataan käyttäjä login-näytölle rekisteröinnin jälkeen
         } catch (e) {
-            setError('Registration failed. Please try again.');
-            console.error('Registration error: ', e.message);
+            // Tarkastetaan virheen tyyppi
+            if (e.code === 'auth/email-already-exists') {
+                setError('The email address is already in use by another account.');
+            } else if (e.code === 'auth/invalid-email') {
+                setError('The email address is not valid.');
+            } else {
+                setError('Registration failed. Please try again.');
+            }
         }
     };
 
     return ( 
         <View style={globalStyles.container}>
-            <Text style={globalStyles.title}>Register</Text>
 
             <TextInput 
                 style={globalStyles.input}
@@ -154,7 +134,7 @@ export default function RegisterScreen({ navigation }) {
                 <Text style={globalStyles.link}>Login</Text>
             </Pressable>
             </View>
-        <View><Image source={require('../assets/RL-splash-icon.png')} style={{ width: 200, height: 200, alignSelf: 'center', marginTop: 50 }} /></View>
+        <View><Image source={require('../assets/RL-splash-icon.png')} style={{ width: 180, height: 180, alignSelf: 'center', marginTop: 50 }} /></View>
         </View>
     )
 };

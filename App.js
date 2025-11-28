@@ -28,7 +28,9 @@ export default function App() {
 }
 
 function AppContent() {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading, logout, profile } = useContext(AuthContext);
+
+  console.log('Current user profile:', profile);
 
   if (loading) {
     return (
@@ -44,7 +46,33 @@ function AppContent() {
         // Jos kirjautuneena sisään, näytetään pääsovellus välilehtinavigaatiolla
         <Tab.Navigator
           screenOptions={({ route }) => ({
-            headerShown: false,
+            headerShown: true,
+            headerTitleAlign: 'center',
+            headerStyle: { backgroundColor: COLORS.headerBackground },
+            headerTitleStyle: { color: COLORS.text },
+            headerRight: () => (
+              <View style={{ alignItems: 'center' }}>
+              <Ionicons
+                name="log-out-outline"
+                size={24}
+                color={COLORS.text}
+                style={{ marginRight: 15 }}
+                onPress={logout}
+              />
+              <Text style={{ color: COLORS.text, marginRight: 15, fontSize: 11 }}>Logout</Text>
+              </View>
+            ),
+            headerLeft: () => (
+              <View style={{ alignItems: 'center' }}>
+                <Ionicons
+                  name="person-outline"
+                  size={24}
+                  color={COLORS.text}
+                  style={{ marginLeft: 15 }}
+                />
+                <Text style={{ color: COLORS.text, marginLeft: 15, fontSize: 11 }}>{profile ? profile.firstName : user?.email ?? 'Profile'}</Text>
+              </View>
+            ),
             tabBarStyle: { backgroundColor: '#222222' },
             tabBarActiveTintColor: COLORS.accent,
             tabBarInactiveTintColor: '#888888',
@@ -69,7 +97,12 @@ function AppContent() {
         </Tab.Navigator>
       ) : (
         // Jos ei kirjautuneena sisään, näytetään Login / Register -näkymä
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator screenOptions={{ 
+          headerShown: true,
+          headerTitleAlign: 'center',
+          headerStyle: { backgroundColor: COLORS.headerBackground },
+          headerTitleStyle: { color: COLORS.text } 
+          }}>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
         </Stack.Navigator>

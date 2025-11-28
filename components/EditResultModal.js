@@ -51,8 +51,13 @@ export default function EditResultModal({ visible, onClose, result }) {
             }
 
             try {
+                    // Guard: ensure we still have the result prop before proceeding
+                    if (!result) {
+                        alert('No result selected to update. Please reopen the editor.');
+                        return;
+                    }
                 const updatedData = {
-                    date: result.date,
+                        date: result.date,
                     notes: notes.trim() || '',
                     result: {
                         reps: resultType === 'reps' ? parseInt(reps) : null,
@@ -67,16 +72,16 @@ export default function EditResultModal({ visible, onClose, result }) {
                 console.log('Result updated successfully');
                 // Rakenna päivitetty tulosobjekti palautettavaksi parent-komponentille
                 const updatedResult = {
-                    id: result.id,
+                    id: result?.id ?? null,
                     date: updatedData.date,
                     reps: updatedData.result.reps,
                     time: updatedData.result.time,
                     weight: updatedData.result.weight,
                     weightUnit: updatedData.result.weightUnit,
                     notes: updatedData.notes,
-                    workoutName: result.workoutName ?? result.workoutName,
-                    workoutMode: result.workoutMode ?? null,
-                    workoutId: result.workoutId ?? null,
+                    workoutName: result?.workoutName ?? '',
+                    workoutMode: result?.workoutMode ?? null,
+                    workoutId: result?.workoutId ?? null,
                 };
                 onClose(updatedResult);
             } catch (e) {

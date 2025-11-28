@@ -1,11 +1,12 @@
 import { Text, View, ActivityIndicator, FlatList, Alert, Pressable, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { globalStyles } from '../styles/globalStyles';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, deleteDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
 import EditResultModal from './EditResultModal';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../styles/theme';
+import { AuthContext } from '../authentication/AuthContext';
 
 export default function ResultsScreen() {
     const [results, setResults] = useState([]);
@@ -14,11 +15,22 @@ export default function ResultsScreen() {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortNewestFirst, setSortNewestFirst] = useState(true);
 
+    const { user } = useContext(AuthContext);
+
+
     useEffect(() => {
-            const unsubscribe = onSnapshot(collection(db, 'results'), async (snapshot) => {
+
+        // Jos ei käyttäjää, ei dataa
+            if (!user) return;
+
+            const resultsRef = collection(db, 'results');
+            const q = query(resultsRef, where('userId', '==', user.uid));
+        
+            const unsubscribe = onSnapshot(q, async (snapshot) => {
             const data = await Promise.all(snapshot.docs.map(async docSnap => {
             const result = docSnap.data();
 
+    
 
             // Haetaan tulokseen liittyvän treenin nimi
             let workoutName = 'Workout';
@@ -101,10 +113,9 @@ export default function ResultsScreen() {
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <View style={globalStyles.container}>
-        <Text style={globalStyles.title}>Workout Results</Text>
 
         {results.length === 0 ? (
-            <Text style={globalStyles.exerciseText}>No results found.</Text>
+            <Text style={[globalStyles.exerciseText, {textAlign: 'center', fontSize: 18}]}>No results found.</Text>
         ) : (
             <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>

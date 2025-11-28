@@ -27,7 +27,6 @@ export default function LoginScreen({ navigation }) {
 
     return (
         <View style={globalStyles.container}>
-            <Text style={globalStyles.title}>Login</Text>
 
             <TextInput 
                 style={globalStyles.input}
@@ -62,7 +61,7 @@ export default function LoginScreen({ navigation }) {
                 <Text style={globalStyles.link}>Register</Text>
             </Pressable>
         </View>
-        <View style={{ alignItems: 'center', marginTop: 50 }}><Image source={require('../assets/RL-splash-icon.png')} style={{ width: 200, height: 200 }} /></View>
+        <View style={{ alignItems: 'center', marginTop: 50 }}><Image source={require('../assets/RL-splash-icon.png')} style={{ width: 250, height: 250 }} /></View>
         </View>
     );
 };

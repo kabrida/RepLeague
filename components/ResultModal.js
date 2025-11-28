@@ -1,11 +1,12 @@
 import { addDoc, collection } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { db } from "../firebaseConfig";
 import { Modal, Pressable, TextInput, View, Text, Platform, Keyboard, KeyboardAvoidingView, TouchableWithoutFeedback } from "react-native";
 import { globalStyles } from '../styles/globalStyles';
 import { COLORS } from "../styles/theme";
 import { Picker } from "@react-native-picker/picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { AuthContext } from "../authentication/AuthContext";
 
 export default function ResultModal({ visible, onClose, workout }) {
     const [time, setTime] = useState('');
@@ -13,6 +14,8 @@ export default function ResultModal({ visible, onClose, workout }) {
     const [weight, setWeight] = useState('');
     const [notes, setNotes] = useState('');
     const [weightUnit, setWeightUnit] = useState('kg'); // Oletuksena kilot
+
+    const { user } = useContext(AuthContext);
 
     useEffect(() => {
         // Päivitetään inputit aina kun workout muuttuu
@@ -40,6 +43,12 @@ export default function ResultModal({ visible, onClose, workout }) {
 
     const handleSave = async () => {
         const workoutId = workout?.firestoreId || workout?.id;
+      
+        if (!user) {
+            console.error('User is not logged in');
+            return;
+        }
+      
         if (!workoutId) {
             console.error('Workout ID is missing');
             return;
@@ -64,6 +73,7 @@ export default function ResultModal({ visible, onClose, workout }) {
         // Luodaan tulosobjekti syötteiden perusteella
         const newResult = {
             workoutId,
+            userId: user.uid,
             date: new Date().toISOString(),
             result: {
                 status: resultType === 'generic' ? 'COMPLETED' : null,

@@ -4,7 +4,7 @@ import { COLORS } from "./theme";
 export const globalStyles = StyleSheet.create({
     container: {
         padding: 20,
-        paddingTop: 60,
+        paddingTop: 30,
         flex: 1,
         backgroundColor: COLORS.background,
       //  alignItems: 'center',
@@ -26,7 +26,7 @@ export const globalStyles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
-        marginTop: 50,
+        marginTop: 10,
         color: COLORS.text,
         textAlign: 'center',
     },
@@ -142,6 +142,7 @@ export const globalStyles = StyleSheet.create({
         borderRadius: 8,
         alignItems: 'center',
         maxHeight: 40,
+        minHeight: 40,
     },
     buttonText: {
         color: '#fff',

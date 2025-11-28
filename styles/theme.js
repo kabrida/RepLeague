@@ -8,4 +8,5 @@ export const COLORS = {
     border: '#00BFA6',
     muted: '#888888',
     placeholder: '#b9b9b9ff',
+    headerBackground: '#222222ff',
 };
